@@ -1,2 +1,3 @@
 # MinhaBiblioteca
-app de livros
+app de livros (em desenvolvimento)
+
