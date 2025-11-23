@@ -66,6 +66,6 @@ def insert(bd=('./DB.db')):
     conn.commit()
     cursor.close(), conn.close()
 
-drop()
-create()
+#drop()
+#create()
 insert()
