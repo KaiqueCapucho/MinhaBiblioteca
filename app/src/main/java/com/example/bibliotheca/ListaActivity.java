@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 public class ListaActivity extends AppCompatActivity {
 
     private SQLiteDatabase bibliotecaBD;
+    private ListView lstView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,8 +32,8 @@ public class ListaActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.navView);
 
         BDHelper bdHelper = new BDHelper(this);
-        SQLiteDatabase bibliotecaBD = bdHelper.getReadableDatabase();
-
+        bibliotecaBD = bdHelper.getReadableDatabase();
+        lstView = findViewById(R.id.listView);
         Spinner spnCategoria = findViewById(R.id.spnCategoria);
 
         //Configura a toolbar e seus elementos (aka. Drawer do menu lateral)
@@ -59,11 +62,12 @@ public class ListaActivity extends AppCompatActivity {
         });
 
         configSpnCategoria(spnCategoria, bibliotecaBD); //adiciona os elementos(categorias) do bd no spinner
+
         spnCategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String itemSel = adapterView.getSelectedItem().toString();
-                configRecyclerView(itemSel, bibliotecaBD);
+                configListView(itemSel, bibliotecaBD);
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) { } //Não faz nada
@@ -72,27 +76,33 @@ public class ListaActivity extends AppCompatActivity {
 
     private void configSpnCategoria(Spinner spn, SQLiteDatabase bd){
         ArrayList<String> arratCat = new ArrayList<>();
-        Cursor cur = bd.rawQuery("SELECT categoria FROM Categorias ORDER BY categoria ASC", null);
-        if(cur.moveToFirst()){
-            do{
-                int index = cur.getColumnIndex("categoria");
-                if(index>=0){
-                    String nomeCat = cur.getString(index);
-                    arratCat.add(nomeCat);
-                }
-            }while (cur.moveToNext());
+        try (Cursor cur = bd.rawQuery("SELECT categoria FROM Categorias ORDER BY categoria ASC", null)) {
+            if (cur.moveToFirst()) {
+                do {
+                    int index = cur.getColumnIndex("categoria");
+                    if (index >= 0) {
+                        String nomeCat = cur.getString(index);
+                        arratCat.add(nomeCat);
+                    }
+                } while (cur.moveToNext());
+            }
         }
-
-        cur.close();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, arratCat);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spn.setAdapter(adapter);
     }
-    private void configRecyclerView(String sqlParam, SQLiteDatabase bd){
-        String sql = "S";         //criar a query
-        Cursor cur = bd.rawQuery(sql, null);
-        LivrosAdapter lvAdapter = new LivrosAdapter(ListaActivity.this, cur, null); //tratar esse null
-        //listView.setAdapter(lvAdapter)
+    private void configListView(String sqlParam, SQLiteDatabase bd){
+        String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, GROUP_CONCAT(Autores.nome) AS autores, GROUP_CONCAT(categoria) AS categorias " +
+                "FROM Livros JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
+                "JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
+                "JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
+                "JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
+                "WHERE Categorias.categoria = ? " +
+                "GROUP BY Livros._id ";
+
+        Cursor cur = bd.rawQuery(sql, new String[]{sqlParam});
+        LivrosAdapter livroAdap = new LivrosAdapter(ListaActivity.this, cur);
+        lstView.setAdapter(livroAdap);
     }
 
     @Override
