@@ -1,9 +1,11 @@
-import sqlite3, os
+import sqlite3, os, pandas
 
 def drop(bd='./DB.db'):
     if os.path.exists(bd):os.remove(bd)
     else: print(f"O arquivo {bd} não foi encontrado.")
-def create(bd=('./DB.db')):
+
+
+def create(bd='./DB.db'):
     conn = sqlite3.connect(bd)
     cursor = conn.cursor()
 
@@ -19,7 +21,6 @@ def create(bd=('./DB.db')):
 
     cursor.execute(''' CREATE TABLE IF NOT EXISTS Temas (_id INTEGER PRIMARY KEY AUTOINCREMENT,
      tema STRING UNIQUE NOT NULL);''')
-
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Livros_Temas (
@@ -39,33 +40,51 @@ def create(bd=('./DB.db')):
     cursor.close(),conn.close()
 
 
-def insert(bd=('./DB.db')):
+def insert(excel, bd='./DB.db'):
+    with pandas.ExcelFile(excel) as file: sheet = pandas.read_excel(file, sheet_name='Livros')
+    sheet = sheet.fillna("")
+    dic = {col.lower(): list(sheet[col]) for col in sheet.columns}
     conn = sqlite3.connect(bd)
     cursor = conn.cursor()
-    with open('./livros.txt', encoding='utf-8') as books:
-        category = ''
-        for line in books.readlines():
-            if line.startswith('---'):
-                cursor.execute('INSERT INTO Categorias (categoria) VALUES (?)', (line[3:],))
-                categoryID = cursor.lastrowid
-            else:
-                book, author, *tip = line.strip().split('\t')
-                if tip: tip = tip[0].strip()
-                else: tip = None
-                try:
-                    cursor.execute('INSERT INTO Autores (nome) VALUES (?)', (author.strip(),))
-                    authorID = cursor.lastrowid
-                except sqlite3.IntegrityError: pass
-                try:
-                    cursor.execute('''INSERT INTO Livros (titulo_pt_br, descricao, idioma)
-                                        VALUES (?,?,?)''', (book.strip(),tip, 'português'))
-                    bookID = cursor.lastrowid
-                except: pass
-                cursor.execute('''INSERT INTO Livros_Autores VALUES (?,?)''', (bookID,authorID))
-                cursor.execute('''INSERT INTO Livros_Categorias VALUES (?,?)''', (bookID,categoryID))
-    conn.commit()
-    cursor.close(), conn.close()
+    for livros in map(list, zip(*dic.values())):
+        livros = ['' if item == '\\' else item for item in livros]
+        livro, ptbr, idioma, autores, categorias = livros
+        autores,categorias = autores.split('&'),categorias.split('&') #lista de autores, categorias p/livro
 
-#drop()
-#create()
-insert()
+        #Adiciona as categorias, substitui seu id na lista de categorias p/livro
+        for i, c in enumerate(categorias):
+            try:
+                cursor.execute('INSERT INTO Categorias (categoria) VALUES (?)', (c.strip(),))
+                categorias[i] = cursor.lastrowid
+            except sqlite3.IntegrityError:  # Se a categoria já estiver no bd ele coleta seu id
+                categorias[i] = cursor.execute("SELECT _id FROM Categorias WHERE categoria = ?", (c.strip(),)).fetchone()[0]
+
+        # Adiciona os autores, substitui seu id na lista de autores p/livro
+        for i, a in enumerate(autores):
+            try:
+                cursor.execute('INSERT INTO Autores (nome) VALUES (?)', (a.strip(),))
+                autores[i] = cursor.lastrowid
+            except sqlite3.IntegrityError:  # Se o autor já estiver no bd ele coleta seu id
+                autores[i] = cursor.execute("SELECT _id FROM Autores WHERE nome = ?", (a.strip(),)).fetchone()[0]
+
+        # Adiciona o livro
+        try:
+            #Esse str(livro) é para os casos em que o nome do livro é somente um número. (1984 de Orwell, por exemplo)
+            cursor.execute('''INSERT INTO Livros (titulo_original, titulo_pt_br, idioma)
+                            VALUES (?,?,?)''', (str(livro).strip(), str(ptbr).strip(), idioma.strip()))
+            livro = cursor.lastrowid
+        except Exception as e:print(f'Erro no try do Livro. {e}')
+
+        #Faz os vínculos entre as tabelas
+        for cat in categorias:
+            cursor.execute('''INSERT INTO Livros_Categorias  VALUES (?,?)''', (livro, cat))
+        for autor in autores:
+            cursor.execute('''INSERT INTO Livros_Autores VALUES (?,?)''', (livro, autor))
+
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+drop(), create()
+insert(input('Diretório do excel? '))
