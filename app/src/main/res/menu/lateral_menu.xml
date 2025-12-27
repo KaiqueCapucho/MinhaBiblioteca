@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/selpAutor"
+        android:title="Selecionar p/Autor"
+        />
+    <item
+        android:id="@+id/selpCategoria"
+        android:title="Selecionar p/Categoria" />
+    <item
+        android:id="@+id/selpTema"
+        android:title="Selecionar p/Tema" />
+    <item
+        android:id="@+id/addLivro"
+        android:title="Adicionar Livro" />
+</menu>

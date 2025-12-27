@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/livroAtv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#3E4DFF">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_alignParentTop="true"
+            android:background="#FF0000"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ImageButton
+            android:id="@+id/imgBtnEditar"
+            android:layout_width="53dp"
+            android:layout_height="45dp"
+            android:contentDescription="@string/app_name"
+            app:layout_constraintBottom_toBottomOf="@+id/toolbar"
+            app:layout_constraintEnd_toEndOf="@+id/toolbar"
+            app:layout_constraintHorizontal_bias="0.952"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/toolbar"
+            app:srcCompat="@android:drawable/ic_menu_edit" />
+
+        <EditText
+            android:id="@+id/edtTxtTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginHorizontal="15dp"
+            android:textSize="25sp"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:gravity="center"
+            android:text="titulo"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.51"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+        <EditText
+            android:id="@+id/edtTxtPtBr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:gravity="center"
+            android:text="titulo_pt_br"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.475"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtTitulo" />
+
+        <EditText
+            android:id="@+id/edtTxtAutor"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="15dp"
+            android:autoSizeTextType="uniform"
+            android:enabled="false"
+            android:inputType="text"
+            android:text="autor"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtCategorias"
+            app:layout_constraintEnd_toStartOf="@+id/imgCapa"
+            app:layout_constraintHorizontal_bias="0.789"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtPtBr"
+            app:layout_constraintVertical_bias="0.3" />
+
+        <EditText
+            android:id="@+id/edtTxtCategorias"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="text"
+            android:text="categorias"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtTemas"
+            app:layout_constraintEnd_toStartOf="@+id/imgCapa"
+            app:layout_constraintHorizontal_bias="0.588"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgCapa" />
+
+        <EditText
+            android:id="@+id/edtTxtTemas"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            android:ems="10"
+            android:enabled="false"
+            android:inputType="text"
+            android:text="Temas: "
+
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtDescricao"
+            app:layout_constraintEnd_toStartOf="@+id/imgCapa"
+            app:layout_constraintHorizontal_bias="0.588"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edtTxtCategorias" />
+
+        <EditText
+            android:id="@+id/edtTxtAnoPub"
+            android:layout_width="60dp"
+            android:layout_height="48dp"
+            android:ems="4"
+            android:enabled="false"
+            android:inputType="text"
+            android:text="@string/app_name"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtCategorias"
+            app:layout_constraintEnd_toStartOf="@+id/imgCapa"
+            app:layout_constraintStart_toEndOf="@id/edtTxtEditora"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtAutor"
+            app:layout_constraintVertical_bias="0.0" />
+
+
+        <EditText
+            android:id="@+id/edtTxtEditora"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:enabled="false"
+            android:inputType="text"
+            android:text="editora"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtCategorias"
+            app:layout_constraintEnd_toStartOf="@+id/edtTxtAnoPub"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtAutor"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <EditText
+            android:id="@+id/edtTxtDescricao"
+            android:layout_width="match_parent"
+            android:layout_height="224dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginBottom="48dp"
+            android:background="@color/white"
+            android:enabled="false"
+            android:inputType="textMultiLine"
+            android:text="@string/app_name"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgCapa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/edtTxtDescricao"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.937"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtPtBr"
+            app:layout_constraintVertical_bias="0.195"
+            app:srcCompat="@mipmap/marisa_foreground" />
+
+        <CheckBox
+            android:id="@+id/chkObtido"
+            android:layout_width="105dp"
+            android:layout_height="48dp"
+            android:enabled="false"
+            android:text="obtido"
+            app:layout_constraintEnd_toEndOf="@+id/imgCapa"
+            app:layout_constraintHorizontal_bias="0.562"
+            app:layout_constraintStart_toStartOf="@+id/imgCapa"
+            app:layout_constraintTop_toBottomOf="@+id/imgCapa" />
+
+        <Button
+            android:id="@+id/btnCancelar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="cancelar"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSalvar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtDescricao" />
+
+        <Button
+            android:id="@+id/btnSalvar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="salvar"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnCancelar"
+            app:layout_constraintTop_toBottomOf="@+id/edtTxtDescricao" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/menuLat"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#FFF2AD"
+        android:layout_marginTop="56dp"
+        app:menu="@menu/lateral_menu">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:src="@mipmap/patchouli_foreground"
+                android:layout_gravity="bottom|center_horizontal" />
+        </FrameLayout>
+    </com.google.android.material.navigation.NavigationView>
+</androidx.drawerlayout.widget.DrawerLayout>
