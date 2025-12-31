@@ -1,14 +1,17 @@
 package com.example.bibliotheca;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +30,14 @@ import java.util.Objects;
 public class ListaCategoria extends AppCompatActivity {
 
     private SQLiteDatabase bibliotecaBD;
-    private ListView lstView;
+    private ListView lstLivros;
     private TextView txtCont;
     private LivrosAdapter livroAdap;
+    private EditText edtSearch;
+    private ListView lstCat;
+    private Dialog dialog;
+    private TextView txtSpinner;
+    private BDHelper bdHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,11 +46,12 @@ public class ListaCategoria extends AppCompatActivity {
         DrawerLayout drawerLayout = findViewById(R.id.main);
         NavigationView menuLat = findViewById(R.id.menuLat);
 
-        BDHelper bdHelper = new BDHelper(this);
+        bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
 
-        lstView = findViewById(R.id.listView);
-        Spinner spnCategoria = findViewById(R.id.spinner);
+        txtSpinner = findViewById(R.id.txtSpinner);
+
+        lstLivros = findViewById(R.id.listView);
         txtCont = findViewById(R.id.txtCont);
 
         //Configura a toolbar e seus elementos (aka. Drawer do menu lateral)
@@ -81,27 +90,55 @@ public class ListaCategoria extends AppCompatActivity {
             return true;
         });
 
-        //adiciona os elementos(categorias) do bd no spinner
-        configSpnCategoria(spnCategoria, bibliotecaBD);
+        //adiciona os elementos(categorias) do bd no dialog/spinner
+        txtSpinner.setOnClickListener(view -> {
+            dialog = new Dialog(ListaCategoria.this);
+            dialog.setContentView(R.layout.dialog_spinner);
+            dialog.show();
+            edtSearch = dialog.findViewById(R.id.edtTxtSearch);
+            lstCat = dialog.findViewById(R.id.lstType);
+            configSpnCategoria(lstCat, bibliotecaBD);
+        });
+    }
+
+    private void configSpnCategoria(ListView listView, SQLiteDatabase bd){
+        ArrayList<String> arratCat = bdHelper.getColuna(bibliotecaBD, "Categorias", "categoria");
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arratCat);
+        adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
+        listView.setAdapter(adapter);
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int i, int i1, int i2) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int i, int i1, int i2) {
+                adapter.getFilter().filter(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable e) { }
+        });
 
         //Adiciona os livros no listView
-        spnCategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, GROUP_CONCAT(Autores.nome) AS autores, GROUP_CONCAT(categoria) AS categorias " +
-                        "FROM Livros JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
-                        "JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
-                        "JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
-                        "JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
-                        "WHERE Categorias.categoria = ? GROUP BY Livros._id ";
-                Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{spnCategoria.getSelectedItem().toString()});
-                livroAdap = new LivrosAdapter(ListaCategoria.this, cur);
-                lstView.setAdapter(livroAdap);
-                txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) { } //Não faz nada
+        listView.setOnItemClickListener((adapterView, view, i, l) -> {
+            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, GROUP_CONCAT(Autores.nome) AS autores, GROUP_CONCAT(categoria) AS categorias " +
+                    "FROM Livros JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
+                    "JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
+                    "JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
+                    "JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
+                    "WHERE Categorias.categoria = ? GROUP BY Livros._id ";
+            Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{adapterView.getItemAtPosition(i).toString()});
+            livroAdap = new LivrosAdapter(ListaCategoria.this, cur);
+            lstLivros.setAdapter(livroAdap);
+            dialog.dismiss();
+            txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
+            txtCont.setVisibility(View.VISIBLE);
+
         });
+        configListViewClick(lstLivros);
+    }
+
+    private void configListViewClick(ListView lstView) {
         lstView.setOnItemClickListener((adapterView, view, i, l) -> {
             Intent intent = new Intent(ListaCategoria.this, Livro.class);
             intent.putExtra(Livro.extraLivroID, String.valueOf(livroAdap.getLivroID(i)));
@@ -109,35 +146,9 @@ public class ListaCategoria extends AppCompatActivity {
         });
     }
 
-    private void configSpnCategoria(Spinner spnCategoria, SQLiteDatabase bd){
-        ArrayList<String> arratCat = new ArrayList<>();
-        try (Cursor cur = bd.rawQuery("SELECT categoria FROM Categorias ORDER BY categoria ASC", null)) {
-            if (cur.moveToFirst()) {
-                do {
-                    int index = cur.getColumnIndex("categoria");
-                    if (index >= 0) {
-                        arratCat.add(cur.getString(index));
-                    }
-                } while (cur.moveToNext());
-            }
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, arratCat);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spnCategoria.setAdapter(adapter);
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(bibliotecaBD != null){
-            bibliotecaBD.close();
-        }
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
         if(bibliotecaBD != null){
             bibliotecaBD.close();
         }
