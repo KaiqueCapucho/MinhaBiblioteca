@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/selpAutor"
-        android:title="Selecionar p/Autor"
+        android:title="@string/selp_autor"
         />
     <item
         android:id="@+id/selpCategoria"
-        android:title="Selecionar p/Categoria" />
+        android:title="@string/selp_categoria" />
     <item
         android:id="@+id/selpTema"
-        android:title="Selecionar p/Tema" />
+        android:title="@string/selp_tema" />
     <item
         android:id="@+id/addLivro"
-        android:title="Adicionar Livro" />
+        android:title="@string/adicionar_livro" />
+
 </menu>

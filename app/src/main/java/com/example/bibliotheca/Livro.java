@@ -145,6 +145,7 @@ public class Livro extends AppCompatActivity {
 
         cursor.close();
     }
+
     public void toggleEdicao(){
         titulo.setEnabled(!titulo.isEnabled());
         ptbr.setEnabled(!ptbr.isEnabled());
@@ -167,7 +168,7 @@ public class Livro extends AppCompatActivity {
         cvLivros.put("ano_pub", anoPub.getText().toString().trim());
         cvLivros.put("editora", editora.getText().toString().trim());
         cvLivros.put("descricao", descricao.getText().toString().trim());
-        //cvLivros.put("obtido", chkBox);
+        cvLivros.put("obtido", chkBox.isChecked());
 
         //Atualiza a tabela Livros
         bd.update("Livros", cvLivros, "Livros._id = ?", new String[]{livroID});

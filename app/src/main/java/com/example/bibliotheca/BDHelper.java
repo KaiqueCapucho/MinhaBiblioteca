@@ -54,53 +54,6 @@ public class BDHelper extends SQLiteOpenHelper {
         return super.getReadableDatabase();
     }
 
-
-    public ArrayList<String> getCategorias(SQLiteDatabase bd){
-        ArrayList<String> arrayCat = new ArrayList<>();
-        try (Cursor cur = bd.rawQuery("SELECT categoria FROM Categorias ORDER BY categoria ASC", null)) {
-            if (cur.moveToFirst()) {
-                do {
-                    int index = cur.getColumnIndex("categoria");
-                    if (index >= 0) {
-                        arrayCat.add(cur.getString(index));
-                    }
-                } while (cur.moveToNext());
-            }
-        }
-        return arrayCat;
-    }
-    public ArrayList<String> getAutores(SQLiteDatabase bd){
-        ArrayList<String> arrayAutor = new ArrayList<>();
-        try (Cursor cur = bd.rawQuery("SELECT nome FROM Autores ORDER BY nome ASC", null)) {
-            if (cur.moveToFirst()) {
-                do {
-                    int index = cur.getColumnIndex("nome");
-                    if (index >= 0) {
-                        String nomeCat = cur.getString(index);
-                        arrayAutor.add(nomeCat);
-                    }
-                } while (cur.moveToNext());
-            }
-        }
-        return arrayAutor;
-    }
-
-    public ArrayList<String> getTemas(SQLiteDatabase bd) {
-        ArrayList<String> arrayTemas = new ArrayList<>();
-        try (Cursor cur = bd.rawQuery("SELECT tema FROM Temas ORDER BY tema ASC", null)) {
-            if (cur.moveToFirst()) {
-                do {
-                    int index = cur.getColumnIndex("tema");
-                    if (index >= 0) {
-                        String nomeCat = cur.getString(index);
-                        arrayTemas.add(nomeCat);
-                    }
-                } while (cur.moveToNext());
-            }
-        }
-        return arrayTemas;
-    }
-
     public ArrayList<String> getColuna(SQLiteDatabase bd, String tab, String col){
         ArrayList<String> array = new ArrayList<>();
         try (Cursor cur = bd.rawQuery("SELECT " + col +" FROM " + tab + " ORDER BY " +col+ " ASC", null)) {
@@ -116,4 +69,29 @@ public class BDHelper extends SQLiteOpenHelper {
         }
         return array;
     }
+    public ArrayList<String> getLivros(SQLiteDatabase bd){
+        ArrayList<String> array = new ArrayList<>();
+        try (Cursor cur = bd.rawQuery("SELECT _id, titulo_original, titulo_pt_br FROM Livros", null)) {
+            if (cur.moveToFirst()) {
+                do {
+                    int index = cur.getColumnIndex("titulo_original");
+                    if (index >= 0) {
+                        String nomeCat = cur.getString(index);
+                        if(nomeCat!=null){
+                            array.add(nomeCat);
+                        }
+                    }
+                    index = cur.getColumnIndex("titulo_pt_br");
+                    if (index >= 0) {
+                        String nomeCat = cur.getString(index);
+                        if(nomeCat!=null){
+                            array.add(nomeCat);
+                        }
+                    }
+                } while (cur.moveToNext());
+            }
+        }
+        return array;
+    }
+
 }

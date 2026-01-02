@@ -10,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -38,6 +39,8 @@ public class ListaCategoria extends AppCompatActivity {
     private Dialog dialog;
     private TextView txtSpinner;
     private BDHelper bdHelper;
+    private View headerView;
+    private AutoCompleteTextView acTxtView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +48,7 @@ public class ListaCategoria extends AppCompatActivity {
 
         DrawerLayout drawerLayout = findViewById(R.id.main);
         NavigationView menuLat = findViewById(R.id.menuLat);
+        headerView = menuLat.getHeaderView(0);
 
         bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
@@ -54,7 +58,15 @@ public class ListaCategoria extends AppCompatActivity {
         lstLivros = findViewById(R.id.listView);
         txtCont = findViewById(R.id.txtCont);
 
-        //Configura a toolbar e seus elementos (aka. Drawer do menu lateral)
+
+        configToolbar(drawerLayout);
+        configMenuLat(menuLat, drawerLayout);
+
+        txtSpinner.setOnClickListener(view -> {
+            configDialog(); });
+    }
+
+    private void configToolbar(DrawerLayout drawerLayout){
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle(""); //remove o título da toolbar
@@ -71,9 +83,10 @@ public class ListaCategoria extends AppCompatActivity {
             @Override
             public void onDrawerStateChanged(int newState) { }
         });
+    }
 
-        //Configuração dos elementos do Menu Lateral
-        menuLat.setNavigationItemSelectedListener(item -> {
+    private void configMenuLat(NavigationView menuLateral, DrawerLayout drawerLayout){
+        menuLateral.setNavigationItemSelectedListener(item -> {
             if(item.getItemId() == R.id.selpAutor){
                 startActivity(new Intent(ListaCategoria.this, ListaAutor.class));
             }
@@ -89,19 +102,34 @@ public class ListaCategoria extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+        acTxtView = headerView.findViewById(R.id.acTxtView);
 
-        //adiciona os elementos(categorias) do bd no dialog/spinner
-        txtSpinner.setOnClickListener(view -> {
-            dialog = new Dialog(ListaCategoria.this);
-            dialog.setContentView(R.layout.dialog_spinner);
-            dialog.show();
-            edtSearch = dialog.findViewById(R.id.edtTxtSearch);
-            lstCat = dialog.findViewById(R.id.lstType);
-            configSpnCategoria(lstCat, bibliotecaBD);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(ListaCategoria.this,
+                android.R.layout.simple_dropdown_item_1line,
+                bdHelper.getLivros(bibliotecaBD));
+        acTxtView.setAdapter(adapter);
+
+        acTxtView.setOnItemClickListener((adapterView, view, i, l) -> {
+            String t = adapterView.getItemAtPosition(i).toString();
+            Cursor c = bibliotecaBD.rawQuery(
+                    "SELECT _id FROM Livros WHERE titulo_original == ? OR titulo_pt_br == ?", new String[]{t,t});
+            if (c.moveToFirst()) {
+                openLivroActivity(c.getInt(c.getColumnIndexOrThrow("_id")));
+                acTxtView.setText("");
+            }
         });
     }
 
-    private void configSpnCategoria(ListView listView, SQLiteDatabase bd){
+    private void configDialog(){
+        dialog = new Dialog(ListaCategoria.this);
+        dialog.setContentView(R.layout.dialog_spinner);
+        dialog.show();
+        edtSearch = dialog.findViewById(R.id.edtTxtSearch);
+        lstCat = dialog.findViewById(R.id.lstType);
+        addCategoriesOnDialog(lstCat);
+    }
+
+    private void addCategoriesOnDialog(ListView listView){
         ArrayList<String> arratCat = bdHelper.getColuna(bibliotecaBD, "Categorias", "categoria");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arratCat);
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
@@ -118,32 +146,41 @@ public class ListaCategoria extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable e) { }
         });
+        addLivrosOnListView(listView);
+    }
 
-        //Adiciona os livros no listView
-        listView.setOnItemClickListener((adapterView, view, i, l) -> {
-            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, GROUP_CONCAT(Autores.nome) AS autores, GROUP_CONCAT(categoria) AS categorias " +
-                    "FROM Livros JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
-                    "JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
-                    "JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
-                    "JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
-                    "WHERE Categorias.categoria = ? GROUP BY Livros._id ";
-            Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{adapterView.getItemAtPosition(i).toString()});
+    private void addLivrosOnListView(ListView spnListView){
+        //configura o ListView dos Livros
+        spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
+            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, " +
+                    "REPLACE(GROUP_CONCAT(DISTINCT Autores.nome), ',', ', ' ) AS autores, " +
+                    "REPLACE(GROUP_CONCAT(DISTINCT Categorias.categoria), ',', ', ' ) AS categorias " +
+                    "FROM Livros " +
+                    "JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
+                    "LEFT JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
+                    "LEFT JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
+                    "LEFT JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
+                    "GROUP BY Livros._id HAVING GROUP_CONCAT(Categorias.categoria) LIKE ?";
+            Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{"%"+adapterView.getItemAtPosition(i).toString()+"%"});
             livroAdap = new LivrosAdapter(ListaCategoria.this, cur);
             lstLivros.setAdapter(livroAdap);
             dialog.dismiss();
             txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
             txtCont.setVisibility(View.VISIBLE);
+            txtSpinner.setText(adapterView.getItemAtPosition(i).toString());
 
         });
-        configListViewClick(lstLivros);
+        //Abertura de LivroActivity pelo item do lstLivros
+        lstLivros.setOnItemClickListener(((adapterView, view, i, l) -> {
+            openLivroActivity(livroAdap.getLivroID(i));
+        }));
     }
 
-    private void configListViewClick(ListView lstView) {
-        lstView.setOnItemClickListener((adapterView, view, i, l) -> {
-            Intent intent = new Intent(ListaCategoria.this, Livro.class);
-            intent.putExtra(Livro.extraLivroID, String.valueOf(livroAdap.getLivroID(i)));
-            startActivity(intent);
-        });
+    //Abre a activity_livro ao clicar num item do ListView
+    private void openLivroActivity(int i) {
+        Intent intent = new Intent(this, Livro.class);
+        intent.putExtra(Livro.extraLivroID, String.valueOf(i));
+        startActivity(intent);
     }
 
     @Override

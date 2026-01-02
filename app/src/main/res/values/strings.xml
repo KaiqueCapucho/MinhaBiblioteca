@@ -2,4 +2,12 @@
     <string name="app_name">Bibliotheca</string>
     <string name="Open">NavBar</string>
     <string name="Close">NavBar</string>
+    <string name="adicionar_livro">Adicionar Livro</string>
+    <string name="selp_tema">Selecionar p/Tema</string>
+    <string name="selp_categoria">Selecionar p/Categoria</string>
+    <string name="selp_autor">Selecionar p/Autor</string>
+    <string name="none" />
+    <string name="buscar_livro">Buscar Livro...</string>
+    <string name="select_category">Select a Category</string>
+    <string name="select_author">Select a Author</string>
 </resources>

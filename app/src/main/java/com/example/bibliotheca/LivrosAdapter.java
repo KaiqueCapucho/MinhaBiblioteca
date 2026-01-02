@@ -3,12 +3,14 @@ package com.example.bibliotheca;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class LivrosAdapter extends CursorAdapter {
     private ArrayList<Integer> listaID = new ArrayList<>();
@@ -24,13 +26,24 @@ public class LivrosAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo_original"));
+        String ptbr = cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br"));
+
         TextView txt = view.findViewById(R.id.txtNome);
-        txt.setText(cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br")));
+        txt.setText(Objects.equals(titulo, "") ? ptbr: titulo );
+
         txt = view.findViewById(R.id.txtAutor);
         txt.setText(cursor.getString(cursor.getColumnIndexOrThrow("autores")));
+
         txt = view.findViewById(R.id.txtCategoria);
         txt.setText(cursor.getString(cursor.getColumnIndexOrThrow("categorias")));
+
         listaID.add(cursor.getInt(cursor.getColumnIndexOrThrow("_id")));
+
+        int colIndex = cursor.getColumnIndex("obtido");
+        if (colIndex != -1 && cursor.getInt(colIndex) == 1) {
+            view.setBackgroundColor(Color.parseColor("#FFEB3B"));
+        }
     }
     public int getLivroID(int p){
         return listaID.get(p);
