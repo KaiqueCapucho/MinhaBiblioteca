@@ -88,16 +88,16 @@ public class ListaCategoria extends AppCompatActivity {
     private void configMenuLat(NavigationView menuLateral, DrawerLayout drawerLayout){
         menuLateral.setNavigationItemSelectedListener(item -> {
             if(item.getItemId() == R.id.selpAutor){
-                startActivity(new Intent(ListaCategoria.this, ListaAutor.class));
+                startActivity(new Intent(this, ListaAutor.class));
             }
             if(item.getItemId() == R.id.selpCategoria){
-                startActivity(new Intent(ListaCategoria.this, ListaCategoria.class));
+                startActivity(new Intent(this, ListaCategoria.class));
             }
             if(item.getItemId() == R.id.selpTema){
-                Toast.makeText(ListaCategoria.this, "Não Implementado.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Não Implementado.", Toast.LENGTH_SHORT).show();
             }
             if(item.getItemId() == R.id.addLivro){
-                Toast.makeText(ListaCategoria.this, "Não Implementado.", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, AddLivro.class));
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -152,7 +152,7 @@ public class ListaCategoria extends AppCompatActivity {
     private void addLivrosOnListView(ListView spnListView){
         //configura o ListView dos Livros
         spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
-            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, " +
+            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, obtido, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT Autores.nome), ',', ', ' ) AS autores, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT Categorias.categoria), ',', ', ' ) AS categorias " +
                     "FROM Livros " +

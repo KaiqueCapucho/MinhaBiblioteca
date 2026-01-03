@@ -41,7 +41,7 @@ public class LivrosAdapter extends CursorAdapter {
         listaID.add(cursor.getInt(cursor.getColumnIndexOrThrow("_id")));
 
         int colIndex = cursor.getColumnIndex("obtido");
-        if (colIndex != -1 && cursor.getInt(colIndex) == 1) {
+        if (cursor.getInt(colIndex) == 1) {
             view.setBackgroundColor(Color.parseColor("#FFEB3B"));
         }
     }

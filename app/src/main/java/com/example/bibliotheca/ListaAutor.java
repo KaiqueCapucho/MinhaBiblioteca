@@ -96,7 +96,7 @@ public class ListaAutor extends AppCompatActivity {
                 Toast.makeText(this, "Não Implementado.", Toast.LENGTH_SHORT).show();
             }
             if(item.getItemId() == R.id.addLivro){
-                Toast.makeText(this, "Não Implementado.", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, AddLivro.class));
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -150,7 +150,7 @@ public class ListaAutor extends AppCompatActivity {
     private void addLivrosOnListView(ListView spnListView){
         //configura o ListView dos Livros
         spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
-            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, " +
+            String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, obtido, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT Autores.nome), ',', ', ' ) AS autores, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT categoria), \",\", \", \") AS categorias " +
                     "FROM Livros \n" +

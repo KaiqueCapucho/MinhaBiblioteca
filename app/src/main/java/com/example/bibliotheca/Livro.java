@@ -36,6 +36,7 @@ public class Livro extends AppCompatActivity {
     private EditText categorias;
     private EditText temas;
     private EditText descricao;
+    private EditText idioma;
     private CheckBox chkBox;
     private Button   btnSalva;
     private Button   btnCancela;
@@ -61,6 +62,7 @@ public class Livro extends AppCompatActivity {
         categorias = findViewById(R.id.edtTxtCategorias);
         temas = findViewById(R.id.edtTxtTemas);
         descricao = findViewById(R.id.edtTxtDescricao);
+        idioma = findViewById(R.id.edtTxtIdioma);
         chkBox = findViewById(R.id.chkObtido);
         btnSalva = findViewById(R.id.btnSalvar);
         btnCancela = findViewById(R.id.btnCancelar);
@@ -155,6 +157,7 @@ public class Livro extends AppCompatActivity {
         categorias.setEnabled(!categorias.isEnabled());
         temas.setEnabled(!temas.isEnabled());
         descricao.setEnabled(!descricao.isEnabled());
+        idioma.setEnabled(!idioma.isEnabled());
         chkBox.setEnabled(!chkBox.isEnabled());
         btnSalva.setVisibility(btnSalva.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         btnCancela.setVisibility(btnCancela.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -164,7 +167,7 @@ public class Livro extends AppCompatActivity {
         ContentValues cvLivros = new ContentValues();
         cvLivros.put("titulo_original", titulo.getText().toString().trim());
         cvLivros.put("titulo_pt_br", ptbr.getText().toString().trim());
-        //cvLivros.put("idioma", );
+        cvLivros.put("idioma", idioma.getText().toString().trim());
         cvLivros.put("ano_pub", anoPub.getText().toString().trim());
         cvLivros.put("editora", editora.getText().toString().trim());
         cvLivros.put("descricao", descricao.getText().toString().trim());
@@ -173,27 +176,34 @@ public class Livro extends AppCompatActivity {
         //Atualiza a tabela Livros
         bd.update("Livros", cvLivros, "Livros._id = ?", new String[]{livroID});
 
+
         // Delete das conexões
         bd.execSQL("DELETE FROM Livros_Autores WHERE Livro_id = ?", new Object[]{livroID});
         bd.execSQL("DELETE FROM Livros_Categorias WHERE Livro_id = ?", new Object[]{livroID});
+        bd.execSQL("DELETE FROM Livros_Temas WHERE Livro_id = ?", new Object[]{livroID});
 
-        ContentValues autorValues = new ContentValues();
-        autorValues.put("nome", autor.getText().toString().trim());
-        long autorID = bd.insertWithOnConflict("Autores", null, autorValues, SQLiteDatabase.CONFLICT_IGNORE);
 
-        if (autorID < 0) {
-            Cursor cursor = bd.rawQuery("SELECT _id FROM Autores WHERE nome = ?", new String[]{autor.getText().toString().trim()});
-            if (cursor.moveToFirst()) {
-                autorID = cursor.getInt(cursor.getColumnIndexOrThrow("_id"));
-            }
-            cursor.close();
-        }
+        String[] autoresArray = autor.getText().toString().split(",");
 
         // Associar livro ao autor
-        ContentValues livroAutorValues = new ContentValues();
-        livroAutorValues.put("livro_id", livroID);
-        livroAutorValues.put("autor_id", autorID);
-        bd.insertWithOnConflict("Livros_Autores", null, livroAutorValues, SQLiteDatabase.CONFLICT_IGNORE);
+        for (String autor : autoresArray) {
+            ContentValues autorValues = new ContentValues();
+            autorValues.put("nome", autor.trim());
+            long autorID = bd.insertWithOnConflict("Autores", null, autorValues, SQLiteDatabase.CONFLICT_IGNORE);
+            if (autorID == -1) {
+                Cursor cursor = bd.rawQuery("SELECT _id FROM Autores WHERE nome = ?", new String[]{autor.trim()});
+                if (cursor.moveToFirst()) {
+                    autorID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+                }
+                cursor.close();
+            }
+            // Associar Livro ao autor
+            ContentValues livroCategoriaValues = new ContentValues();
+            livroCategoriaValues.put("livro_id", livroID);
+            livroCategoriaValues.put("autor_id", autorID);
+            bd.insert("Livros_Autores", null, livroCategoriaValues);
+
+        }
 
         // Inserir ou obter IDs das Categorias
         String[] categoriasArray = categorias.getText().toString().split(",");
@@ -223,7 +233,6 @@ public class Livro extends AppCompatActivity {
             ContentValues temaValues = new ContentValues();
             temaValues.put("tema", tema.trim());
             long temaID = bd.insertWithOnConflict("Temas", null, temaValues, SQLiteDatabase.CONFLICT_IGNORE);
-
             if (temaID == -1) {
                 Cursor cursor = bd.rawQuery("SELECT _id FROM Temas WHERE tema = ?", new String[]{tema.trim()});
                 if (cursor.moveToFirst()) {
