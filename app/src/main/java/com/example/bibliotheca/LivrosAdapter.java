@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class LivrosAdapter extends CursorAdapter {
-    private ArrayList<Integer> listaID = new ArrayList<>();
+    private final ArrayList<Integer> listaID = new ArrayList<>();
 
     public LivrosAdapter(Context context, Cursor c) {
         super(context, c, false); //Descobrir o que é esse false e o que são as flags

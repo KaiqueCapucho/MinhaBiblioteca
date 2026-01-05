@@ -8,6 +8,7 @@
     <string name="selp_autor">Selecionar p/Autor</string>
     <string name="none" />
     <string name="buscar_livro">Buscar Livro...</string>
-    <string name="select_category">Select a Category</string>
-    <string name="select_author">Select a Author</string>
+    <string name="select_category">Selecionar Categoria</string>
+    <string name="select_theme">Selecionar Tema</string>
+    <string name="select_author">Selecionar Autor</string>
 </resources>

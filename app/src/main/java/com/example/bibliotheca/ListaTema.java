@@ -16,30 +16,28 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class ListaAutor extends AppCompatActivity {
-
+public class ListaTema extends AppCompatActivity {
     private SQLiteDatabase bibliotecaBD;
     private ListView lstLivros;
     private TextView txtCont;
-    private TextView txtSpinner;
-    private EditText edtSearch;
     private LivrosAdapter livroAdap;
+    private EditText edtSearch;
     private Dialog dialog;
+    private TextView txtSpinner;
     private BDHelper bdHelper;
     private View headerView;
     private AutoCompleteTextView acTxtView;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +51,11 @@ public class ListaAutor extends AppCompatActivity {
         bibliotecaBD = bdHelper.getReadableDatabase();
 
         txtSpinner = findViewById(R.id.txtSpinner);
-        txtSpinner.setText(R.string.select_author);
+        txtSpinner.setText(R.string.select_theme);
+
         lstLivros = findViewById(R.id.listView);
         txtCont = findViewById(R.id.txtCont);
+
 
         configToolbar(drawerLayout);
         configMenuLat(menuLat, drawerLayout);
@@ -85,15 +85,15 @@ public class ListaAutor extends AppCompatActivity {
     private void configMenuLat(NavigationView menuLateral, DrawerLayout drawerLayout){
         menuLateral.setNavigationItemSelectedListener(item -> {
             if(item.getItemId() == R.id.selpAutor){
-                Toast.makeText(this, "Já Selecionado.", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ListaAutor.class));
+                finish();
             }
             if(item.getItemId() == R.id.selpCategoria){
                 startActivity(new Intent(this, ListaCategoria.class));
                 finish();
             }
             if(item.getItemId() == R.id.selpTema){
-                startActivity(new Intent(this, ListaTema.class));
-                finish();
+                Toast.makeText(this, "Já Selecionado.", Toast.LENGTH_SHORT).show();
             }
             if(item.getItemId() == R.id.addLivro){
                 startActivity(new Intent(this, AddLivro.class));
@@ -102,6 +102,7 @@ public class ListaAutor extends AppCompatActivity {
             return true;
         });
         acTxtView = headerView.findViewById(R.id.acTxtView);
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line,
                 bdHelper.getLivros(bibliotecaBD));
@@ -114,7 +115,7 @@ public class ListaAutor extends AppCompatActivity {
             if (c.moveToFirst()) {
                 openLivroActivity(c.getInt(c.getColumnIndexOrThrow("_id")));
                 acTxtView.setText("");
-            } c.close();
+            }c.close();
         });
     }
 
@@ -123,13 +124,13 @@ public class ListaAutor extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_spinner);
         dialog.show();
         edtSearch = dialog.findViewById(R.id.edtTxtSearch);
-        ListView lstAut = dialog.findViewById(R.id.lstType);
-        addAuthorsOnDialog(lstAut);
+        ListView lstTem = dialog.findViewById(R.id.lstType);
+        addThemesOnDialog(lstTem);
     }
 
-    private void addAuthorsOnDialog(ListView listView){
-        ArrayList<String> arrayAut = bdHelper.getColuna(bibliotecaBD, "Autores", "nome");
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arrayAut);
+    private void addThemesOnDialog(ListView listView){
+        ArrayList<String> arratCat = bdHelper.getColuna(bibliotecaBD, "Temas", "tema");
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arratCat);
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         listView.setAdapter(adapter);
         edtSearch.addTextChangedListener(new TextWatcher() {
@@ -152,13 +153,16 @@ public class ListaAutor extends AppCompatActivity {
         spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
             String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, obtido, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT Autores.nome), ',', ', ' ) AS autores, " +
-                    "REPLACE(GROUP_CONCAT(DISTINCT categoria), \",\", \", \") AS categorias " +
-                    "FROM Livros \n" +
+                    "REPLACE(GROUP_CONCAT(DISTINCT Categorias.categoria), ',', ', ' ) AS categorias, " +
+                    "REPLACE(GROUP_CONCAT(DISTINCT Temas.tema), ',', ', ' ) AS temas " +
+                    "FROM Livros " +
                     "JOIN Livros_Autores ON Livros._id = Livros_Autores.livro_id " +
                     "LEFT JOIN Autores ON Autores._id = Livros_Autores.autor_id " +
                     "LEFT JOIN Livros_Categorias ON Livros._id = Livros_Categorias.livro_id " +
                     "LEFT JOIN Categorias ON Categorias._id = Livros_Categorias.categoria_id " +
-                    "GROUP BY Livros._id HAVING GROUP_CONCAT(Autores.nome) LIKE ?";
+                    "LEFT JOIN Livros_Temas ON Livros._id = Livros_Temas.livro_id " +
+                    "LEFT JOIN Temas ON Temas._id = Livros_Temas.tema_id " +
+                    "GROUP BY Livros._id HAVING GROUP_CONCAT(Temas.tema) LIKE ?";
             Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{"%"+adapterView.getItemAtPosition(i).toString()+"%"});
             livroAdap = new LivrosAdapter(this, cur);
             lstLivros.setAdapter(livroAdap);

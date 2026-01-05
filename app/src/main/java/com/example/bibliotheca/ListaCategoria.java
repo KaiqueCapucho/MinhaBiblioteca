@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -35,7 +34,6 @@ public class ListaCategoria extends AppCompatActivity {
     private TextView txtCont;
     private LivrosAdapter livroAdap;
     private EditText edtSearch;
-    private ListView lstCat;
     private Dialog dialog;
     private TextView txtSpinner;
     private BDHelper bdHelper;
@@ -54,7 +52,7 @@ public class ListaCategoria extends AppCompatActivity {
         bibliotecaBD = bdHelper.getReadableDatabase();
 
         txtSpinner = findViewById(R.id.txtSpinner);
-
+        txtSpinner.setText(R.string.select_category);
         lstLivros = findViewById(R.id.listView);
         txtCont = findViewById(R.id.txtCont);
 
@@ -62,8 +60,7 @@ public class ListaCategoria extends AppCompatActivity {
         configToolbar(drawerLayout);
         configMenuLat(menuLat, drawerLayout);
 
-        txtSpinner.setOnClickListener(view -> {
-            configDialog(); });
+        txtSpinner.setOnClickListener(view -> configDialog());
     }
 
     private void configToolbar(DrawerLayout drawerLayout){
@@ -89,12 +86,14 @@ public class ListaCategoria extends AppCompatActivity {
         menuLateral.setNavigationItemSelectedListener(item -> {
             if(item.getItemId() == R.id.selpAutor){
                 startActivity(new Intent(this, ListaAutor.class));
+                finish();
             }
             if(item.getItemId() == R.id.selpCategoria){
-                startActivity(new Intent(this, ListaCategoria.class));
+                Toast.makeText(this, "Já Selecionado.", Toast.LENGTH_SHORT).show();
             }
             if(item.getItemId() == R.id.selpTema){
-                Toast.makeText(this, "Não Implementado.", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, ListaTema.class));
+                finish();
             }
             if(item.getItemId() == R.id.addLivro){
                 startActivity(new Intent(this, AddLivro.class));
@@ -116,7 +115,7 @@ public class ListaCategoria extends AppCompatActivity {
             if (c.moveToFirst()) {
                 openLivroActivity(c.getInt(c.getColumnIndexOrThrow("_id")));
                 acTxtView.setText("");
-            }
+            } c.close();
         });
     }
 
@@ -125,7 +124,7 @@ public class ListaCategoria extends AppCompatActivity {
         dialog.setContentView(R.layout.dialog_spinner);
         dialog.show();
         edtSearch = dialog.findViewById(R.id.edtTxtSearch);
-        lstCat = dialog.findViewById(R.id.lstType);
+        ListView lstCat = dialog.findViewById(R.id.lstType);
         addCategoriesOnDialog(lstCat);
     }
 
@@ -171,9 +170,7 @@ public class ListaCategoria extends AppCompatActivity {
 
         });
         //Abertura de LivroActivity pelo item do lstLivros
-        lstLivros.setOnItemClickListener(((adapterView, view, i, l) -> {
-            openLivroActivity(livroAdap.getLivroID(i));
-        }));
+        lstLivros.setOnItemClickListener(((adapterView, view, i, l) -> openLivroActivity(livroAdap.getLivroID(i))));
     }
 
     //Abre a activity_livro ao clicar num item do ListView

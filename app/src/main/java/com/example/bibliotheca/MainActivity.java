@@ -23,5 +23,6 @@ public class MainActivity extends AppCompatActivity {
         });
         Intent lista = new Intent(this, ListaCategoria.class);
         startActivity(lista);
+        finish();
     }
 }

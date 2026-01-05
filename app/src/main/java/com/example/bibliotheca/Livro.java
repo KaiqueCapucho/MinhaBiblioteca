@@ -11,17 +11,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.navigation.NavigationView;
-
-import java.util.Objects;
 
 public class Livro extends AppCompatActivity {
 
@@ -46,14 +37,15 @@ public class Livro extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_livro);
 
+        //recebe livroID parâmetro
         Intent intent = getIntent();
         livroID = intent.getStringExtra(Livro.extraLivroID);
 
-        DrawerLayout drawerLayout = findViewById(R.id.main);
-        NavigationView menuLat = findViewById(R.id.menuLat);
+        //Config toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         ImageButton imgBtnEdit = findViewById(R.id.imgBtnEditar);
-        Toolbar  toolbar = findViewById(R.id.toolbar);
         titulo = findViewById(R.id.edtTxtTitulo);
         ptbr = findViewById(R.id.edtTxtPtBr);
         autor = findViewById(R.id.edtTxtAutor);
@@ -67,40 +59,13 @@ public class Livro extends AppCompatActivity {
         btnSalva = findViewById(R.id.btnSalvar);
         btnCancela = findViewById(R.id.btnCancelar);
 
-        //Configura a toolbar e seus elementos (aka. Drawer do menu lateral)
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setTitle(""); //remove o título da toolbar
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.Open, R.string.Close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) { }
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) { }
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) { }
-            @Override
-            public void onDrawerStateChanged(int newState) { }
-        });
+        //Config toolbar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("");
+        }
 
-        //Configuração dos elementos do Menu Lateral
-        menuLat.setNavigationItemSelectedListener(item -> {
-            if(item.getItemId() == R.id.selpAutor){
-                startActivity(new Intent(Livro.this, ListaAutor.class));
-            }
-            if(item.getItemId() == R.id.selpCategoria){
-                startActivity(new Intent(Livro.this, ListaCategoria.class));
-            }
-            if(item.getItemId() == R.id.selpTema){
-                Toast.makeText(Livro.this, "Não Implementado.", Toast.LENGTH_SHORT).show();
-            }
-            if(item.getItemId() == R.id.addLivro){
-                Toast.makeText(Livro.this, "Não Implementado.", Toast.LENGTH_SHORT).show();
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
         //Inicialização do banco de dados
         BDHelper bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
@@ -129,18 +94,18 @@ public class Livro extends AppCompatActivity {
             chkBox.setChecked(cursor.getInt(cursor.getColumnIndexOrThrow("obtido")) >= 1);
         }
 
-        //Botão para ativar edição
-        imgBtnEdit.setOnClickListener(view -> toggleEdicao());
+        //Config do botão para ativar edição
+        imgBtnEdit.setOnClickListener(view -> toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox));
 
         //Config do botão de cancelamento
         btnCancela.setOnClickListener(view -> {
             Toast.makeText(getApplicationContext(), "Edição cancelada!", Toast.LENGTH_SHORT).show();
-            toggleEdicao();
+            toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox);
         });
 
         //Config do botão de salvar alterações
         btnSalva.setOnClickListener(view -> {
-            toggleEdicao();
+            toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox);
             updateBD(bibliotecaBD);
             Toast.makeText(getApplicationContext(), "Dados salvos no bd!", Toast.LENGTH_SHORT).show();
         });
@@ -148,22 +113,16 @@ public class Livro extends AppCompatActivity {
         cursor.close();
     }
 
-    public void toggleEdicao(){
-        titulo.setEnabled(!titulo.isEnabled());
-        ptbr.setEnabled(!ptbr.isEnabled());
-        autor.setEnabled(!autor.isEnabled());
-        editora.setEnabled(!editora.isEnabled());
-        anoPub.setEnabled(!anoPub.isEnabled());
-        categorias.setEnabled(!categorias.isEnabled());
-        temas.setEnabled(!temas.isEnabled());
-        descricao.setEnabled(!descricao.isEnabled());
-        idioma.setEnabled(!idioma.isEnabled());
-        chkBox.setEnabled(!chkBox.isEnabled());
+    public void toggleEdicao(View... views){
+        for (View view: views){
+            view.setEnabled((!view.isEnabled()));
+        }
         btnSalva.setVisibility(btnSalva.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         btnCancela.setVisibility(btnCancela.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
     }
 
     public void updateBD(SQLiteDatabase bd) {
+        //Atualiza a tabela Livros
         ContentValues cvLivros = new ContentValues();
         cvLivros.put("titulo_original", titulo.getText().toString().trim());
         cvLivros.put("titulo_pt_br", ptbr.getText().toString().trim());
@@ -172,81 +131,46 @@ public class Livro extends AppCompatActivity {
         cvLivros.put("editora", editora.getText().toString().trim());
         cvLivros.put("descricao", descricao.getText().toString().trim());
         cvLivros.put("obtido", chkBox.isChecked());
-
-        //Atualiza a tabela Livros
         bd.update("Livros", cvLivros, "Livros._id = ?", new String[]{livroID});
 
-
-        // Delete das conexões
+        // Delete das associações
         bd.execSQL("DELETE FROM Livros_Autores WHERE Livro_id = ?", new Object[]{livroID});
         bd.execSQL("DELETE FROM Livros_Categorias WHERE Livro_id = ?", new Object[]{livroID});
         bd.execSQL("DELETE FROM Livros_Temas WHERE Livro_id = ?", new Object[]{livroID});
 
+        associaTabelas(autor, "Autores", "nome", "Livros_Autores", "autor_id");
+        associaTabelas(categorias, "Categorias", "categoria", "Livros_Categorias", "categoria_id");
+        associaTabelas(temas, "Temas", "tema", "Livros_Temas", "tema_id");
+    }
 
-        String[] autoresArray = autor.getText().toString().split(",");
-
-        // Associar livro ao autor
-        for (String autor : autoresArray) {
-            ContentValues autorValues = new ContentValues();
-            autorValues.put("nome", autor.trim());
-            long autorID = bd.insertWithOnConflict("Autores", null, autorValues, SQLiteDatabase.CONFLICT_IGNORE);
-            if (autorID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Autores WHERE nome = ?", new String[]{autor.trim()});
+    public void associaTabelas(EditText edt, String tab, String col, String tabA, String colA){
+        String[] array = edt.getText().toString().split(",");
+        for (String s : array){
+            //Tenta inserir o valor na tabela
+            ContentValues edtValue = new ContentValues();
+            edtValue.put(col, s.trim());
+            long valueID = bibliotecaBD.insertWithOnConflict(tab, null, edtValue, SQLiteDatabase.CONFLICT_IGNORE);
+           //Pega o id do valor que já existe (se inserção falhar)
+            if (valueID == -1){
+                Cursor cursor = bibliotecaBD.rawQuery("SELECT _id FROM "+ tab +" WHERE "+col+" = ?", new String[]{s.trim()});
                 if (cursor.moveToFirst()) {
-                    autorID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
-                }
-                cursor.close();
+                    valueID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+                } cursor.close();
             }
-            // Associar Livro ao autor
-            ContentValues livroCategoriaValues = new ContentValues();
-            livroCategoriaValues.put("livro_id", livroID);
-            livroCategoriaValues.put("autor_id", autorID);
-            bd.insert("Livros_Autores", null, livroCategoriaValues);
-
-        }
-
-        // Inserir ou obter IDs das Categorias
-        String[] categoriasArray = categorias.getText().toString().split(",");
-        for (String categoria : categoriasArray) {
-            ContentValues categoriaValues = new ContentValues();
-            categoriaValues.put("categoria", categoria.trim());
-            long categoriaID = bd.insertWithOnConflict("Categorias", null, categoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
-
-            if (categoriaID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Categorias WHERE categoria = ?", new String[]{categoria.trim()});
-                if (cursor.moveToFirst()) {
-                    categoriaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
-                }
-                cursor.close();
-            }
-
-            // Associar livro à categoria
-            ContentValues livroCategoriaValues = new ContentValues();
-            livroCategoriaValues.put("livro_id", livroID);
-            livroCategoriaValues.put("categoria_id", categoriaID);
-            bd.insertWithOnConflict("Livros_Categorias", null, livroCategoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
-        }
-
-        // Inserir ou obter IDs dos Temas
-        String[] temasArray = temas.getText().toString().split(",");
-        for (String tema : temasArray) {
-            ContentValues temaValues = new ContentValues();
-            temaValues.put("tema", tema.trim());
-            long temaID = bd.insertWithOnConflict("Temas", null, temaValues, SQLiteDatabase.CONFLICT_IGNORE);
-            if (temaID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Temas WHERE tema = ?", new String[]{tema.trim()});
-                if (cursor.moveToFirst()) {
-                    temaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
-                }
-                cursor.close();
-            }
-            // Associar livro ao tema
-            ContentValues livroTemaValues = new ContentValues();
-            livroTemaValues.put("livro_id", livroID);
-            livroTemaValues.put("tema_id", temaID);
-            bd.insertWithOnConflict("Livros_Temas", null, livroTemaValues, SQLiteDatabase.CONFLICT_IGNORE);
+            //Associa as tabelas
+            ContentValues values = new ContentValues();
+            values.put("livro_id", livroID);
+            values.put(colA, valueID);
+            bibliotecaBD.insert(tabA, null, values);
         }
     }
+
+    // Volta para a activity anterior
+    public boolean onSupportNavigateUp() {
+        getOnBackPressedDispatcher().onBackPressed();
+        return true;
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

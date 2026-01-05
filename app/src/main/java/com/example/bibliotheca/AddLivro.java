@@ -1,41 +1,25 @@
 package com.example.bibliotheca;
 
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
-import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.google.android.material.navigation.NavigationView;
-
-import java.util.ArrayList;
-import java.util.Objects;
 
 public class AddLivro extends AppCompatActivity {
     private SQLiteDatabase bibliotecaBD;
-    private BDHelper bdHelper;
-
     private EditText titulo;
     private EditText ptbr;
     private EditText autores;
@@ -57,8 +41,17 @@ public class AddLivro extends AppCompatActivity {
             return insets;
         });
 
-        bdHelper = new BDHelper(this);
+        BDHelper bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
+
+        //Config toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setTitle("");
+        }
 
         setEdtText();
         configButtons();
@@ -143,12 +136,9 @@ public class AddLivro extends AppCompatActivity {
         String txt = edt.getText().toString();
         if (txt.isEmpty()) {
             edt.setBackgroundColor(Color.parseColor("#F44336"));
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // Restaura a borda original
-                    edt.setBackgroundResource(android.R.drawable.edit_text);
-                }
+            new Handler().postDelayed(() -> {
+                // Restaura a borda original
+                edt.setBackgroundResource(android.R.drawable.edit_text);
             }, 1200);
         }
         return txt;
@@ -200,7 +190,6 @@ public class AddLivro extends AppCompatActivity {
             livroCategoriaValues.put("categoria_id", categoriaID);
             bd.insertWithOnConflict("Livros_Categorias", null, livroCategoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
-
         for (String tema : temList) {
             ContentValues temaValues = new ContentValues();
             temaValues.put("tema", tema.trim());
@@ -218,9 +207,14 @@ public class AddLivro extends AppCompatActivity {
             livroTemaValues.put("tema_id", temaID);
             bd.insertWithOnConflict("Livros_Temas", null, livroTemaValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
+
         Toast.makeText(AddLivro.this, "Livro Adicionado", Toast.LENGTH_SHORT).show();
         finish();
     }
 
-
+    // Volta para a activity anterior
+    public boolean onSupportNavigateUp() {
+        getOnBackPressedDispatcher().onBackPressed();
+        return true;
+    }
 }

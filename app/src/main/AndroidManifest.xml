@@ -17,6 +17,9 @@
             android:exported="false" />
         <activity
             android:name=".Livro"
+            android:exported="false"/>
+        <activity
+            android:name=".ListaTema"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity
