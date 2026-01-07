@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="error">#F44336</color>
+    <color name="textColor">#FF000000</color>           <!--Black -->
+    <color name="backgroundColor">#FFFFFFFF</color>     <!--White -->
+    <color name="error">#F44336</color>                 <!--     -->
+    <color name="toolbarBackground">#6E57AC</color>     <!--Patchy Ribbon Light Purple -->
+    <color name="activityBackground">#F1EA97</color>    <!--Patchy Moon Pale Yellow -->
+    <color name="menuBackground">#EDB2DE</color>        <!--Patchy Another Pink     -->
+    <color name="lstViewDivider">#C97DBA</color>        <!--     -->
+    <color name="recyclerBackground">#FBE8FE</color>    <!--Pachy Dress Pale Pink -->
+    <color name="dialogBackground">#51C9DA</color>      <!--Patchy Ribbon Light Blue -->
+    <color name="pink">#E54EC3</color>                  <!--Patchy Ribbon Light Pink -->
+    <color name="actvBackground">#C97DBA</color>        <!--Patchy Hair Light Purple -->
+    <color name="actvHint">#463D38</color>              <!--Marisa Hat Gray -->
+
 </resources>

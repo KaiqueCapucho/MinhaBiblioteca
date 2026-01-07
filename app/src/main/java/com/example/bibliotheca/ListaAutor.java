@@ -21,6 +21,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -30,7 +32,7 @@ import java.util.Objects;
 public class ListaAutor extends AppCompatActivity {
 
     private SQLiteDatabase bibliotecaBD;
-    private ListView lstLivros;
+    private RecyclerView lstLivros;
     private TextView txtCont;
     private TextView txtSpinner;
     private EditText edtSearch;
@@ -148,7 +150,6 @@ public class ListaAutor extends AppCompatActivity {
     }
 
     private void addLivrosOnListView(ListView spnListView){
-        //configura o ListView dos Livros
         spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
             String sql = "SELECT Livros._id, titulo_original, titulo_pt_br, obtido, " +
                     "REPLACE(GROUP_CONCAT(DISTINCT Autores.nome), ',', ', ' ) AS autores, " +
@@ -161,15 +162,13 @@ public class ListaAutor extends AppCompatActivity {
                     "GROUP BY Livros._id HAVING GROUP_CONCAT(Autores.nome) LIKE ?";
             Cursor cur = bibliotecaBD.rawQuery(sql, new String[]{"%"+adapterView.getItemAtPosition(i).toString()+"%"});
             livroAdap = new LivrosAdapter(this, cur);
+            lstLivros.setLayoutManager(new LinearLayoutManager(this));
             lstLivros.setAdapter(livroAdap);
             dialog.dismiss();
             txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
             txtCont.setVisibility(View.VISIBLE);
             txtSpinner.setText(adapterView.getItemAtPosition(i).toString());
-
         });
-        //Abertura de LivroActivity pelo item do lstLivros
-        lstLivros.setOnItemClickListener(((adapterView, view, i, l) -> openLivroActivity(livroAdap.getLivroID(i))));
     }
 
     //Abre a activity_livro ao clicar num item do ListView

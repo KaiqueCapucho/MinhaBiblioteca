@@ -1,51 +1,78 @@
 package com.example.bibliotheca;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.Objects;
 
-public class LivrosAdapter extends CursorAdapter {
-    private final ArrayList<Integer> listaID = new ArrayList<>();
+public class LivrosAdapter extends RecyclerView.Adapter<LivrosAdapter.LivroViewHolder> {
+    private Context context;
+    private Cursor cursor;
 
-    public LivrosAdapter(Context context, Cursor c) {
-        super(context, c, false); //Descobrir o que é esse false e o que são as flags
+    public LivrosAdapter(Context context, Cursor cursor) {
+        this.context = context;
+        this.cursor = cursor;
+    }
+
+    @NonNull @Override
+    public LivroViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new LivroViewHolder(LayoutInflater.from(context).inflate(R.layout.livros_list, parent, false));
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-        return ((Activity)context).getLayoutInflater().inflate(R.layout.livros_list, viewGroup, false);
-    }
+    public void onBindViewHolder(@NonNull LivrosAdapter.LivroViewHolder holder, int position) {
+        if (cursor.moveToPosition(position)) {
+            int livroID = cursor.getInt(cursor.getColumnIndexOrThrow("_id"));
+            String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo_original"));
+            String ptbt = cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br"));
+            String autores = cursor.getString(cursor.getColumnIndexOrThrow("autores"));
+            String categorias = cursor.getString(cursor.getColumnIndexOrThrow("categorias"));
 
-    @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo_original"));
-        String ptbr = cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br"));
+            // Coloca os dados nos TextViews da ViewHolder
+            holder.txtTitulo.setText(Objects.equals(titulo, "") ? ptbt: titulo );
+            holder.txtAutores.setText(autores);
+            holder.txtCategorias.setText(categorias);
 
-        TextView txt = view.findViewById(R.id.txtNome);
-        txt.setText(Objects.equals(titulo, "") ? ptbr: titulo );
+            if(cursor.getInt(cursor.getColumnIndexOrThrow("obtido"))!=0) {
+                holder.itemView.setBackgroundColor(Color.parseColor(context.getString(R.string.obtido)));
+            } else {
+                holder.itemView.setBackgroundColor(Color.parseColor(context.getString(R.string.lvColor)));
+            }
 
-        txt = view.findViewById(R.id.txtAutor);
-        txt.setText(cursor.getString(cursor.getColumnIndexOrThrow("autores")));
-
-        txt = view.findViewById(R.id.txtCategoria);
-        txt.setText(cursor.getString(cursor.getColumnIndexOrThrow("categorias")));
-
-        listaID.add(cursor.getInt(cursor.getColumnIndexOrThrow("_id")));
-
-        int colIndex = cursor.getColumnIndex("obtido");
-        if (cursor.getInt(colIndex) == 1) {
-            view.setBackgroundColor(Color.parseColor("#FFEB3B"));
+            //Abre a activity_livro
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, Livro.class);
+                intent.putExtra(Livro.extraLivroID, String.valueOf(livroID));
+                context.startActivity(intent);
+            });
         }
     }
-    public int getLivroID(int p){
-        return listaID.get(p);
+
+    @Override
+    public int getItemCount() {
+        return cursor.getCount();
+    }
+
+    // ViewHolder para o RecyclerView
+    public static class LivroViewHolder extends RecyclerView.ViewHolder {
+        TextView txtTitulo, txtAutores, txtCategorias;
+
+        public LivroViewHolder(View itemView) {
+            super(itemView);
+            txtTitulo = itemView.findViewById(R.id.txtNome);
+            txtAutores = itemView.findViewById(R.id.txtAutor);
+            txtCategorias = itemView.findViewById(R.id.txtCategoria);
+
+        }
     }
 }
+

@@ -5,15 +5,15 @@
     <item
         android:id="@+id/selpAutor"
         android:title="@string/selp_autor"
-        />
+        android:text="@string/selp_autor" />
     <item
         android:id="@+id/selpCategoria"
         android:title="@string/selp_categoria" />
     <item
         android:id="@+id/selpTema"
-        android:title="@string/selp_tema" />
+        android:title="@string/selp_tema"/>
     <item
         android:id="@+id/addLivro"
-        android:title="@string/adicionar_livro" />
+        android:title="@string/adicionar_livro"/>
 
 </menu>

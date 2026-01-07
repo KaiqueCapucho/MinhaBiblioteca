@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@android:color/white">
+    android:background="@color/dialogBackground">
 
     <EditText
         android:layout_width="match_parent"
@@ -14,13 +14,15 @@
         android:hint="Search..."
         android:padding="12dp"
         android:inputType="text"
+        android:textColor="@color/textColor"
+        android:textColorHint="@color/actvHint"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@android:drawable/editbox_background" />
+        android:layout_marginBottom="8dp"/>
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:textColor="@color/textColor"
         android:id="@+id/lstType" />
 
 </LinearLayout>
