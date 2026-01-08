@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backgroundColor">#463D38</color>       <!--Black       -->
+    <color name="textColor">#FFE165</color>           <!--White       -->
+    <color name="error">#F44336</color>                 <!--Red         -->
+    <color name="toolbarBackground">#181617</color>     <!--Dark Blue   -->
+    <color name="activityBackground">#0D244D</color>    <!--            -->
+    <color name="menuBackground">#09387C</color>        <!--            -->
+    <color name="lstViewDivider">#9E4575</color>        <!--            -->
+    <color name="recyclerBackground">#463D38</color>    <!--            -->
+    <color name="dialogBackground">#0D244D</color>      <!--            -->
+    <color name="actvBackground">#9E4575</color>        <!--            -->
+    <color name="actvHint">#FFF7D7</color>              <!--            -->
+    <color name="obtido">#000000</color>
+    <color name="lvColor">#463D38</color>
+</resources>

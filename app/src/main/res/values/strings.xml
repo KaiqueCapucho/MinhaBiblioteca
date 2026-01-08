@@ -11,6 +11,6 @@
     <string name="select_category">Selecionar Categoria</string>
     <string name="select_theme">Selecionar Tema</string>
     <string name="select_author">Selecionar Autor</string>
-    <string name="obtido">#51C9DA</string>
-    <string name="lvColor">#FBE8FE</string>
+    <string name="obtido">@color/obtido</string>
+    <string name="lvColor">@color/lvColor</string>
 </resources>

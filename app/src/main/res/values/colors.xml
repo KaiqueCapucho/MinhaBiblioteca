@@ -12,5 +12,7 @@
     <color name="pink">#E54EC3</color>                  <!--Patchy Ribbon Light Pink -->
     <color name="actvBackground">#C97DBA</color>        <!--Patchy Hair Light Purple -->
     <color name="actvHint">#463D38</color>              <!--Marisa Hat Gray -->
+    <color name="obtido">#51C9DA</color>
+    <color name="lvColor">#FBE8FE</color>
 
 </resources>
