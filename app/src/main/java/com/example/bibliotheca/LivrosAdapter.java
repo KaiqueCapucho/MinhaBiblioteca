@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.Objects;
 
 public class LivrosAdapter extends RecyclerView.Adapter<LivrosAdapter.LivroViewHolder> {
-    private Context context;
-    private Cursor cursor;
+    private final Context context;
+    private final Cursor cursor;
 
     public LivrosAdapter(Context context, Cursor cursor) {
         this.context = context;

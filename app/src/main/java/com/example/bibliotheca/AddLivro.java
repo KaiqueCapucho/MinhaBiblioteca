@@ -1,5 +1,6 @@
 package com.example.bibliotheca;
 
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,26 +8,35 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
+import java.util.Objects;
+
 
 public class AddLivro extends AppCompatActivity {
     private SQLiteDatabase bibliotecaBD;
+    private BDHelper bdHelper;
     private EditText titulo;
     private EditText ptbr;
-    private EditText autores;
     private EditText editora;
     private EditText anoPub;
-    private EditText categorias;
-    private EditText temas;
+    private TextView autores;
+    private TextView categorias;
+    private TextView temas;
     private EditText descricao;
     private EditText idioma;
     private CheckBox chkBox;
@@ -41,11 +51,11 @@ public class AddLivro extends AppCompatActivity {
             return insets;
         });
 
-        BDHelper bdHelper = new BDHelper(this);
+        bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
 
         //Config toolbar
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -55,8 +65,13 @@ public class AddLivro extends AppCompatActivity {
 
         setEdtText();
         configButtons();
+
+        autores.setOnClickListener(view -> configRegister(autores, "Autores", "nome"));
+        categorias.setOnClickListener(view -> configRegister(categorias,"Categorias", "categoria"));
+        temas.setOnClickListener(view -> configRegister(temas, "Temas", "tema"));
     }
 
+    // FindView by Ids (onCreate)
     private void setEdtText(){
         titulo = findViewById(R.id.edtTxtTitulo);
         ptbr = findViewById(R.id.edtTxtPtBr);
@@ -80,6 +95,7 @@ public class AddLivro extends AppCompatActivity {
         chkBox.setEnabled(true);
     }
 
+    // (onCreate)
     private void configButtons(){
         ImageButton imgBtn = findViewById(R.id.imgBtnEditar);
         Button btnCancela = findViewById(R.id.btnCancelar);
@@ -132,16 +148,85 @@ public class AddLivro extends AppCompatActivity {
         });
     }
 
-    private String validaText(EditText edt){
-        String txt = edt.getText().toString();
+    private String validaText(TextView view){
+        String txt = view.getText().toString();
         if (txt.isEmpty()) {
-            edt.setBackgroundColor(Color.parseColor("#F44336"));
+            view.setBackgroundColor(Color.parseColor("#F44336"));
             new Handler().postDelayed(() -> {
                 // Restaura a borda original
-                edt.setBackgroundResource(android.R.drawable.edit_text);
+                view.setBackgroundResource(android.R.drawable.edit_text);
             }, 1200);
         }
         return txt;
+    }
+
+    //Config dialog_register (onCreate/onClickListener)
+    public void configRegister(TextView txtView, String tab, String col){
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_register);
+        dialog.show();
+
+        Toolbar toolbar = dialog.findViewById(R.id.dialogTb);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(tab);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(view -> dialog.dismiss());
+
+        //Adiciona as categorias já existentes no chipGroup
+        ChipGroup chipGroup = dialog.findViewById(R.id.dialogCp);
+        String[] text = txtView.getText().toString().split(", ");
+        for (String i: text){
+            if(!i.isEmpty()){addChip(chipGroup, i.trim());}
+        }
+
+
+        //Configura AutoCompleteTextView
+        AutoCompleteTextView dialogTxt = dialog.findViewById(R.id.dialogActv);
+        AutoComAdapter adapter = new AutoComAdapter(this, bdHelper.getColuna(bibliotecaBD,tab, col));
+        dialogTxt.setAdapter(adapter);
+        dialogTxt.setOnItemClickListener((adapterView, view, i, l) -> {
+            String s = adapterView.getItemAtPosition(i).toString();
+            addChip(chipGroup, s.trim());
+            dialogTxt.setText("");
+
+        });
+
+        //configurar botões
+        Button dialogBtnAdd = dialog.findViewById(R.id.dialogBtnAdd);
+        dialogBtnAdd.setOnClickListener(view -> {
+            String txt = dialogTxt.getText().toString();
+            if(!txt.isEmpty()){
+                addChip(chipGroup, txt);
+                dialogTxt.setText("");
+            }
+        });
+
+        Button dialogBtnSalvar = dialog.findViewById(R.id.dialogBtnSalvar);
+        dialogBtnSalvar.setOnClickListener(view -> {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                View child = chipGroup.getChildAt(i);
+                if (child instanceof Chip) {
+                    Chip chip = (Chip) child;
+                    sb.append(chip.getText().toString());
+                    if (i < chipGroup.getChildCount() - 1) {
+                        sb.append(", ");
+                    }
+                }
+            }
+            txtView.setText(sb.toString());
+            dialog.dismiss();
+        });
+    }
+
+    //add chip no chipGroup (configRegister/dialog[AutoCom]TxtClickListener -- )
+    public void addChip(ChipGroup cg, String s){
+        Chip chip = new Chip(this);
+        chip.setText(s);
+        chip.setCloseIconVisible(true);
+        chip.setOnClickListener(v -> cg.removeView(chip));
+        cg.addView(chip);
     }
 
     private void addLivroOnBD(SQLiteDatabase bd, ContentValues livros, String autores, String categorias, String temas) {

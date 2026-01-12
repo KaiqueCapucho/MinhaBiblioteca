@@ -104,11 +104,9 @@ public class ListaCategoria extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
-        acTxtView = headerView.findViewById(R.id.acTxtView);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(ListaCategoria.this,
-                android.R.layout.simple_dropdown_item_1line,
-                bdHelper.getLivros(bibliotecaBD));
+        acTxtView = headerView.findViewById(R.id.acTxtView);
+        AutoComAdapter adapter = new AutoComAdapter(this,bdHelper.getLivros(bibliotecaBD));
         acTxtView.setAdapter(adapter);
 
         acTxtView.setOnItemClickListener((adapterView, view, i, l) -> {
@@ -166,6 +164,7 @@ public class ListaCategoria extends AppCompatActivity {
             livroAdap = new LivrosAdapter(ListaCategoria.this, cur);
             lstLivros.setLayoutManager(new LinearLayoutManager(this));
             lstLivros.setAdapter(livroAdap);
+            lstLivros.setVisibility(View.VISIBLE);
             dialog.dismiss();
             txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
             txtCont.setVisibility(View.VISIBLE);

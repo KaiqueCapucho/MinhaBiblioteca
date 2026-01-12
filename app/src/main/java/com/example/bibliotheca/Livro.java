@@ -1,17 +1,24 @@
 package com.example.bibliotheca;
 
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import java.util.Objects;
 
 
 public class Livro extends AppCompatActivity {
@@ -19,13 +26,14 @@ public class Livro extends AppCompatActivity {
     public static final String extraLivroID = "";
     private String livroID;
     private SQLiteDatabase bibliotecaBD;
+    private BDHelper bdHelper;
     private EditText titulo;
     private EditText ptbr;
-    private EditText autor;
     private EditText editora;
     private EditText anoPub;
-    private EditText categorias;
-    private EditText temas;
+    private TextView autor;
+    private TextView categorias;
+    private TextView temas;
     private EditText descricao;
     private EditText idioma;
     private CheckBox chkBox;
@@ -36,15 +44,17 @@ public class Livro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_livro);
+        bdHelper = new BDHelper(this);
 
         //recebe livroID parâmetro
         Intent intent = getIntent();
         livroID = intent.getStringExtra(Livro.extraLivroID);
 
         //Config toolbar
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //FindViews
         ImageButton imgBtnEdit = findViewById(R.id.imgBtnEditar);
         titulo = findViewById(R.id.edtTxtTitulo);
         ptbr = findViewById(R.id.edtTxtPtBr);
@@ -59,7 +69,7 @@ public class Livro extends AppCompatActivity {
         btnSalva = findViewById(R.id.btnSalvar);
         btnCancela = findViewById(R.id.btnCancelar);
 
-        //Config toolbar
+        //Config toolbar principal (seta voltar)
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -97,19 +107,22 @@ public class Livro extends AppCompatActivity {
         //Config do botão para ativar edição
         imgBtnEdit.setOnClickListener(view -> toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox));
 
-        //Config do botão de cancelamento
+        //Config do botão de cancelamento (toggleEdição)
         btnCancela.setOnClickListener(view -> {
             Toast.makeText(getApplicationContext(), "Edição cancelada!", Toast.LENGTH_SHORT).show();
             toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox);
         });
 
-        //Config do botão de salvar alterações
+        //Config do botão de salvar alterações (toggleEdição/updateBD)
         btnSalva.setOnClickListener(view -> {
             toggleEdicao(titulo, ptbr, autor, editora, anoPub, categorias, temas, descricao, idioma, chkBox);
             updateBD(bibliotecaBD);
             Toast.makeText(getApplicationContext(), "Dados salvos no bd!", Toast.LENGTH_SHORT).show();
         });
 
+        autor.setOnClickListener(view -> configRegister(autor, "Autores", "nome"));
+        categorias.setOnClickListener(view -> configRegister(categorias,"Categorias", "categoria"));
+        temas.setOnClickListener(view -> configRegister(temas, "Temas", "tema"));
         cursor.close();
     }
 
@@ -143,8 +156,9 @@ public class Livro extends AppCompatActivity {
         associaTabelas(temas, "Temas", "tema", "Livros_Temas", "tema_id");
     }
 
-    public void associaTabelas(EditText edt, String tab, String col, String tabA, String colA){
-        String[] array = edt.getText().toString().split(",");
+    // (UpdadeBD)
+    public void associaTabelas(TextView txt, String tab, String col, String tabA, String colA){
+        String[] array = txt.getText().toString().split(",");
         for (String s : array){
             //Tenta inserir o valor na tabela
             ContentValues edtValue = new ContentValues();
@@ -165,7 +179,76 @@ public class Livro extends AppCompatActivity {
         }
     }
 
-    // Volta para a activity anterior
+    //Config dialog_register (onCreate/onClickListener)
+    public void configRegister(TextView txtView, String tab, String col){
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_register);
+        dialog.show();
+
+        Toolbar toolbar = dialog.findViewById(R.id.dialogTb);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(tab);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(view -> dialog.dismiss());
+
+        //Adiciona as categorias já existentes no chipGroup
+        ChipGroup chipGroup = dialog.findViewById(R.id.dialogCp);
+        String[] text = txtView.getText().toString().split(", ");
+        for (String i: text){
+            if(!i.isEmpty()){addChip(chipGroup, i.trim());}
+        }
+
+
+        //Configura AutoCompleteTextView
+        AutoCompleteTextView dialogTxt = dialog.findViewById(R.id.dialogActv);
+        AutoComAdapter adapter = new AutoComAdapter(this, bdHelper.getColuna(bibliotecaBD,tab, col));
+        dialogTxt.setAdapter(adapter);
+        dialogTxt.setOnItemClickListener((adapterView, view, i, l) -> {
+            String s = adapterView.getItemAtPosition(i).toString();
+            addChip(chipGroup, s.trim());
+            dialogTxt.setText("");
+
+        });
+
+        //configurar botões
+        Button dialogBtnAdd = dialog.findViewById(R.id.dialogBtnAdd);
+        dialogBtnAdd.setOnClickListener(view -> {
+            String txt = dialogTxt.getText().toString();
+            if(!txt.isEmpty()){
+                addChip(chipGroup, txt);
+                dialogTxt.setText("");
+            }
+        });
+
+        Button dialogBtnSalvar = dialog.findViewById(R.id.dialogBtnSalvar);
+        dialogBtnSalvar.setOnClickListener(view -> {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                View child = chipGroup.getChildAt(i);
+                if (child instanceof Chip) {
+                    Chip chip = (Chip) child;
+                    sb.append(chip.getText().toString());
+                    if (i < chipGroup.getChildCount() - 1) {
+                        sb.append(", ");
+                    }
+                }
+            }
+            txtView.setText(sb.toString());
+            dialog.dismiss();
+        });
+    }
+
+    //add chip no chipGroup (configRegister/dialog[AutoCom]TxtClickListener -- )
+    public void addChip(ChipGroup cg, String s){
+        Chip chip = new Chip(this);
+        chip.setText(s);
+        chip.setCloseIconVisible(true);
+        chip.setOnClickListener(v -> cg.removeView(chip));
+        cg.addView(chip);
+    }
+
+    // Volta para a activity anterior (configRegister)
     public boolean onSupportNavigateUp() {
         getOnBackPressedDispatcher().onBackPressed();
         return true;

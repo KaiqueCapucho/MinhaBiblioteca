@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="360dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@color/dialogBackground">
+
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/dialogTb"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/toolbarBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <AutoCompleteTextView
+        android:id="@+id/dialogActv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Selecionar: "
+        android:textAlignment="center"
+        android:layout_marginVertical="10dp"
+        android:layout_marginHorizontal="10dp"
+        android:completionThreshold="4"
+        app:layout_constraintBottom_toTopOf="@id/dialogBtnAdd"
+        app:layout_constraintTop_toBottomOf="@+id/dialogCp"/>
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/dialogCp"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:padding="5dp"
+        android:layout_marginVertical="10dp"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintBottom_toTopOf="@id/dialogActv"
+        app:layout_constraintTop_toBottomOf="@+id/dialogTb">
+    </com.google.android.material.chip.ChipGroup>
+
+    <Button
+        android:id="@+id/dialogBtnAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:text="Add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/dialogBtnSalvar"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/dialogBtnSalvar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:text="Salvar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/dialogBtnAdd"
+        app:layout_constraintTop_toBottomOf="@+id/dialogActv" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,4 +13,18 @@
     <string name="select_author">Selecionar Autor</string>
     <string name="obtido">@color/obtido</string>
     <string name="lvColor">@color/lvColor</string>
+    <string name="salvar">salvar</string>
+    <string name="cancelar">cancelar</string>
+    <string name="chkObtido">obtido?</string>
+    <string name="ano">Ano</string>
+    <string name="editora">Editora:</string>
+    <string name="temas">Temas:</string>
+    <string name="categorias">Categorias</string>
+    <string name="autores">Autores</string>
+    <string name="titulo_ptbr">titulo ptbr</string>
+    <string name="titulo_original">titulo original</string>
+    <string name="capa_do_livro">Capa do Livro</string>
+    <string name="patchy">Patchy</string>
+    <string name="descricao">Descrição</string>
+    <string name="idioma">Idioma:</string>
 </resources>
