@@ -148,6 +148,7 @@ public class AddLivro extends AppCompatActivity {
         });
     }
 
+    //
     private String validaText(TextView view){
         String txt = view.getText().toString();
         if (txt.isEmpty()) {
@@ -239,60 +240,63 @@ public class AddLivro extends AppCompatActivity {
             Toast.makeText(AddLivro.this, "Erro! livroID < 0", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        for (String autor : autList) {
-            ContentValues autorValues = new ContentValues();
-            autorValues.put("nome", autor.trim());
-            long autorID = bd.insertWithOnConflict("Autores", null, autorValues, SQLiteDatabase.CONFLICT_IGNORE);
-            if (autorID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Autores WHERE nome = ?", new String[]{autor.trim()});
-                if (cursor.moveToFirst()) {
-                    autorID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+        if(!autores.isEmpty()){
+            for (String autor : autList) {
+                ContentValues autorValues = new ContentValues();
+                autorValues.put("nome", autor.trim());
+                long autorID = bd.insertWithOnConflict("Autores", null, autorValues, SQLiteDatabase.CONFLICT_IGNORE);
+                if (autorID == -1) {
+                    Cursor cursor = bd.rawQuery("SELECT _id FROM Autores WHERE nome = ?", new String[]{autor.trim()});
+                    if (cursor.moveToFirst()) {
+                        autorID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+                    }
+                    cursor.close();
                 }
-                cursor.close();
-                }
-            // Associar Livro ao autor
-            ContentValues livroCategoriaValues = new ContentValues();
-            livroCategoriaValues.put("livro_id", livroID);
-            livroCategoriaValues.put("autor_id", autorID);
-            bd.insert("Livros_Autores", null, livroCategoriaValues);
-
-        }
-        for (String categoria : catList) {
-            ContentValues categoriaValues = new ContentValues();
-            categoriaValues.put("categoria", categoria.trim());
-            long categoriaID = bd.insertWithOnConflict("Categorias", null, categoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
-            if (categoriaID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Categorias WHERE categoria = ?", new String[]{categoria.trim()});
-                if (cursor.moveToFirst()) {
-                    categoriaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
-                }
-                cursor.close();
+                // Associar Livro ao autor
+                ContentValues livroCategoriaValues = new ContentValues();
+                livroCategoriaValues.put("livro_id", livroID);
+                livroCategoriaValues.put("autor_id", autorID);
+                bd.insert("Livros_Autores", null, livroCategoriaValues);
             }
-            // Associar Livro à categoria
-            ContentValues livroCategoriaValues = new ContentValues();
-            livroCategoriaValues.put("livro_id", livroID);
-            livroCategoriaValues.put("categoria_id", categoriaID);
-            bd.insertWithOnConflict("Livros_Categorias", null, livroCategoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
-        for (String tema : temList) {
-            ContentValues temaValues = new ContentValues();
-            temaValues.put("tema", tema.trim());
-            long temaID = bd.insertWithOnConflict("Temas", null, temaValues, SQLiteDatabase.CONFLICT_IGNORE);
-            if (temaID == -1) {
-                Cursor cursor = bd.rawQuery("SELECT _id FROM Temas WHERE tema = ?", new String[]{tema.trim()});
-                if (cursor.moveToFirst()) {
-                    temaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+        if(!categorias.isEmpty()){
+            for (String categoria : catList) {
+                ContentValues categoriaValues = new ContentValues();
+                categoriaValues.put("categoria", categoria.trim());
+                long categoriaID = bd.insertWithOnConflict("Categorias", null, categoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
+                if (categoriaID == -1) {
+                    Cursor cursor = bd.rawQuery("SELECT _id FROM Categorias WHERE categoria = ?", new String[]{categoria.trim()});
+                    if (cursor.moveToFirst()) {
+                        categoriaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+                    }
+                    cursor.close();
                 }
-                cursor.close();
+                // Associar Livro à categoria
+                ContentValues livroCategoriaValues = new ContentValues();
+                livroCategoriaValues.put("livro_id", livroID);
+                livroCategoriaValues.put("categoria_id", categoriaID);
+                bd.insertWithOnConflict("Livros_Categorias", null, livroCategoriaValues, SQLiteDatabase.CONFLICT_IGNORE);
             }
-            // Associar livro ao tema
-            ContentValues livroTemaValues = new ContentValues();
-            livroTemaValues.put("livro_id", livroID);
-            livroTemaValues.put("tema_id", temaID);
-            bd.insertWithOnConflict("Livros_Temas", null, livroTemaValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
-
+        if(!temas.isEmpty()) {
+            for (String tema : temList) {
+                ContentValues temaValues = new ContentValues();
+                temaValues.put("tema", tema.trim());
+                long temaID = bd.insertWithOnConflict("Temas", null, temaValues, SQLiteDatabase.CONFLICT_IGNORE);
+                if (temaID == -1) {
+                    Cursor cursor = bd.rawQuery("SELECT _id FROM Temas WHERE tema = ?", new String[]{tema.trim()});
+                    if (cursor.moveToFirst()) {
+                        temaID = cursor.getLong(cursor.getColumnIndexOrThrow("_id"));
+                    }
+                    cursor.close();
+                }
+                // Associar livro ao tema
+                ContentValues livroTemaValues = new ContentValues();
+                livroTemaValues.put("livro_id", livroID);
+                livroTemaValues.put("tema_id", temaID);
+                bd.insertWithOnConflict("Livros_Temas", null, livroTemaValues, SQLiteDatabase.CONFLICT_IGNORE);
+            }
+        }
         Toast.makeText(AddLivro.this, "Livro Adicionado", Toast.LENGTH_SHORT).show();
         finish();
     }

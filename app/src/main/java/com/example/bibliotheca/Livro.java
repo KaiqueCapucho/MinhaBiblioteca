@@ -97,7 +97,7 @@ public class Livro extends AppCompatActivity {
             ptbr.setText(cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br")));
             autor.setText(cursor.getString(cursor.getColumnIndexOrThrow("autores")));
             editora.setText(cursor.getString(cursor.getColumnIndexOrThrow("editora")));
-            anoPub.setText(String.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("ano_pub"))));
+            anoPub.setText(cursor.getString(cursor.getColumnIndexOrThrow("ano_pub")));
             categorias.setText(cursor.getString(cursor.getColumnIndexOrThrow("categorias")));
             temas.setText(cursor.getString(cursor.getColumnIndexOrThrow("temas")));
             descricao.setText(cursor.getString(cursor.getColumnIndexOrThrow("descricao")));
@@ -158,6 +158,9 @@ public class Livro extends AppCompatActivity {
 
     // (UpdadeBD)
     public void associaTabelas(TextView txt, String tab, String col, String tabA, String colA){
+        if(txt.getText().toString().isEmpty()){
+            return;
+        }
         String[] array = txt.getText().toString().split(",");
         for (String s : array){
             //Tenta inserir o valor na tabela

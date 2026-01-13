@@ -25,4 +25,8 @@ public class MainActivity extends AppCompatActivity {
         startActivity(lista);
         finish();
     }
+    //Remove autores, categorias e/ou temas sem livros associados.
+    public void limpaBD(){
+
+    }
 }
