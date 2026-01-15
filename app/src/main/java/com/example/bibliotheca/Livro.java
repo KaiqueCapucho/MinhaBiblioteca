@@ -77,7 +77,6 @@ public class Livro extends AppCompatActivity {
         }
 
         //Inicialização do banco de dados
-        BDHelper bdHelper = new BDHelper(this);
         bibliotecaBD = bdHelper.getReadableDatabase();
 
         //Inserção de dados nos EditTexts (e checkBox)

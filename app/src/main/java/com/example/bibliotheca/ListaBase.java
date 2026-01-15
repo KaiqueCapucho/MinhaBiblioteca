@@ -10,8 +10,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,13 +40,14 @@ public abstract class ListaBase extends AppCompatActivity {
     protected BDHelper bdHelper;
     protected View headerView;
     protected AutoCompleteTextView acTxtView;
+    protected ImageButton btnConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista);
 
-        DrawerLayout drawerLayout = findViewById(R.id.main);
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
         NavigationView menuLat = findViewById(R.id.menuLat);
         headerView = menuLat.getHeaderView(0);
 
@@ -55,6 +59,7 @@ public abstract class ListaBase extends AppCompatActivity {
         lstLivros = findViewById(R.id.listView);
         txtCont = findViewById(R.id.txtCont);
 
+        btnConfig = findViewById(R.id.btnConfig);
 
         configToolbar(drawerLayout);
         configMenuLat(menuLat, drawerLayout);
@@ -70,16 +75,40 @@ public abstract class ListaBase extends AppCompatActivity {
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.Open, R.string.Close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        // Guarda se txtCont estava visível antes de abrir o drawer
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) { }
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+                btnConfig.setAlpha(slideOffset);
+                btnConfig.setVisibility(View.VISIBLE);
+
+                txtSpinner.setAlpha(Math.max(0f, 1f - slideOffset * 2));
+                txtCont.setAlpha(Math.max(0f, 1f - slideOffset * 2));
+
+                if (slideOffset > 0f) txtCont.setVisibility(View.GONE);
+
+            }
+
             @Override
-            public void onDrawerOpened(@NonNull View drawerView) { }
+            public void onDrawerOpened(@NonNull View drawerView) {
+                txtSpinner.setVisibility(View.GONE);
+                txtCont.setVisibility(View.GONE);
+                btnConfig.setOnClickListener(view -> confBtnConfig() );
+            }
+
             @Override
-            public void onDrawerClosed(@NonNull View drawerView) { }
+            public void onDrawerClosed(@NonNull View drawerView) {
+                btnConfig.setVisibility(View.GONE);
+                txtSpinner.setVisibility(View.VISIBLE);
+                txtCont.setVisibility(txtCont.getText() != ""  ?View.VISIBLE : View.INVISIBLE);
+
+            }
+
             @Override
-            public void onDrawerStateChanged(int newState) { }
+            public void onDrawerStateChanged(int newState) {}
         });
+
     }
 
     //(OnCreate)
@@ -117,6 +146,10 @@ public abstract class ListaBase extends AppCompatActivity {
             } c.close();
         });
     }
+    private void confBtnConfig(){
+        Toast.makeText(getApplicationContext(), "Ainda não Implementado!", Toast.LENGTH_SHORT).show();
+    }
+
 
     //Abre a activity_livro ao clicar num item do ListView (configMenuLat/acTctViewOnClick --
     private void openLivroActivity(int i) {
@@ -159,7 +192,7 @@ public abstract class ListaBase extends AppCompatActivity {
             lstLivros.setAdapter(livroAdap);
             lstLivros.setVisibility(View.VISIBLE);
             dialog.dismiss();
-            txtCont.setText("Total: " +cur.getCount()); //Adiciona o total de livros no contador
+            txtCont.setText(String.format(getString(R.string.total), cur.getCount())); //Adiciona o total de livros no contador
             txtCont.setVisibility(View.VISIBLE);
             txtSpinner.setText(adapterView.getItemAtPosition(i).toString());
         });
