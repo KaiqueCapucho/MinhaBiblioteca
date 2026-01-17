@@ -8,19 +8,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 public class LivrosAdapter extends RecyclerView.Adapter<LivrosAdapter.LivroViewHolder> {
     private final Context context;
-    private final Cursor cursor;
+    private final ArrayList<String[]> dados = new ArrayList<>();
 
     public LivrosAdapter(Context context, Cursor cursor) {
         this.context = context;
-        this.cursor = cursor;
+        setDados(cursor);
+
     }
 
     @NonNull @Override
@@ -30,36 +31,47 @@ public class LivrosAdapter extends RecyclerView.Adapter<LivrosAdapter.LivroViewH
 
     @Override
     public void onBindViewHolder(@NonNull LivrosAdapter.LivroViewHolder holder, int position) {
-        if (cursor.moveToPosition(position)) {
-            int livroID = cursor.getInt(cursor.getColumnIndexOrThrow("_id"));
-            String titulo = cursor.getString(cursor.getColumnIndexOrThrow("titulo_original"));
-            String ptbt = cursor.getString(cursor.getColumnIndexOrThrow("titulo_pt_br"));
-            String autores = cursor.getString(cursor.getColumnIndexOrThrow("autores"));
-            String categorias = cursor.getString(cursor.getColumnIndexOrThrow("categorias"));
+            String[] livro = dados.get(position);
+            holder.txtTitulo.setText(livro[1]);
+            holder.txtAutores.setText(livro[2]);
+            holder.txtCategorias.setText(livro[3]);
 
-            // Coloca os dados nos TextViews da ViewHolder
-            holder.txtTitulo.setText(Objects.equals(titulo, "") ? ptbt: titulo );
-            holder.txtAutores.setText(autores);
-            holder.txtCategorias.setText(categorias);
-
-            if(cursor.getInt(cursor.getColumnIndexOrThrow("obtido"))!=0) {
+            if(Objects.equals(livro[4], "1")) {
                 holder.itemView.setBackgroundColor(Color.parseColor(context.getString(R.string.obtido)));
             } else {
                 holder.itemView.setBackgroundColor(Color.parseColor(context.getString(R.string.lvColor)));
             }
-
             //Abre a activity_livro
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, Livro.class);
-                intent.putExtra(Livro.extraLivroID, String.valueOf(livroID));
+                intent.putExtra(Livro.EXTRA_LIVRO_ID, livro[0]);
                 context.startActivity(intent);
             });
-        }
+
     }
 
     @Override
     public int getItemCount() {
-        return cursor.getCount();
+        return dados.size();
+    }
+
+    public void setDados(Cursor cur){
+        if (cur.moveToFirst()) {
+            do {
+                int livroID = cur.getInt(cur.getColumnIndexOrThrow("_id"));
+                String titulo = cur.getString(cur.getColumnIndexOrThrow("titulo_original"));
+                if (titulo.isEmpty()) {
+                    titulo = cur.getString(cur.getColumnIndexOrThrow("titulo_pt_br"));
+                }
+                String autores = cur.getString(cur.getColumnIndexOrThrow("autores"));
+                String categorias = cur.getString(cur.getColumnIndexOrThrow("categorias"));
+                int obtido = cur.getInt(cur.getColumnIndexOrThrow("obtido"));
+
+                dados.add(new String[]{String.valueOf(livroID), titulo, autores, categorias, String.valueOf(obtido)});
+            } while (cur.moveToNext());
+        }
+        //Ordena a lista pelo titulo do livro
+        dados.sort(Comparator.comparing(s -> s[1]));
     }
 
     // ViewHolder para o RecyclerView

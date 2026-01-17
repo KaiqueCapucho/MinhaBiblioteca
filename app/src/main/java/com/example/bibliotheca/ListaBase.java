@@ -126,7 +126,7 @@ public abstract class ListaBase extends AppCompatActivity {
                 finish();
             }
             if(item.getItemId() == R.id.addLivro){
-                startActivity(new Intent(this, AddLivro.class));
+                startActivity(new Intent(this, Livro.class));
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -154,7 +154,7 @@ public abstract class ListaBase extends AppCompatActivity {
     //Abre a activity_livro ao clicar num item do ListView (configMenuLat/acTctViewOnClick --
     private void openLivroActivity(int i) {
         Intent intent = new Intent(this, Livro.class);
-        intent.putExtra(Livro.extraLivroID, String.valueOf(i));
+        intent.putExtra(Livro.EXTRA_LIVRO_ID, String.valueOf(i));
         startActivity(intent);
     }
 
@@ -166,7 +166,7 @@ public abstract class ListaBase extends AppCompatActivity {
         ListView lstView = dialog.findViewById(R.id.lstType);
 
         //Adiciona categorias, autores ou temas no listView do dialog
-        ArrayList<String> arratCat = bdHelper.getColuna(bibliotecaBD, getTabToDialog(), getColToDialog());
+            ArrayList<String> arratCat = bdHelper.getColuna(bibliotecaBD, getTabToDialog(), getColToDialog());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, arratCat);
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
         lstView.setAdapter(adapter);
@@ -186,8 +186,9 @@ public abstract class ListaBase extends AppCompatActivity {
     }
     private void addLivrosOnListView(ListView spnListView){
         spnListView.setOnItemClickListener((adapterView, view, i, l) -> {
-            Cursor cur = bibliotecaBD.rawQuery(getSqlToListView(), new String[]{"%"+adapterView.getItemAtPosition(i).toString()+"%"});
+            Cursor cur = bibliotecaBD.rawQuery(getSqlToListView(), new String[]{adapterView.getItemAtPosition(i).toString()});
             livroAdap = new LivrosAdapter(this, cur);
+
             lstLivros.setLayoutManager(new LinearLayoutManager(this));
             lstLivros.setAdapter(livroAdap);
             lstLivros.setVisibility(View.VISIBLE);

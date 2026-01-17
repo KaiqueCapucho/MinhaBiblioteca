@@ -27,4 +27,8 @@
     <string name="patchy">Patchy</string>
     <string name="descricao">Descrição</string>
     <string name="idioma">Idioma:</string>
+    <string name="config">config</string>
+    <string name="patchyImg">Patchy</string>
+    <string name="total">Total: %d</string>
+    <string name="selecionar">Selecionar:</string>
 </resources>
